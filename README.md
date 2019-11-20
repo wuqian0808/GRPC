@@ -2,15 +2,17 @@
 ## grpc spring boot starter源码解析
 ### 拦截器
 拦截器设置流程：
-1.  创建annoainterceptor bean
+1. 创建registry bean
+	@PostConstruct
+	GlobalClientInterceptorRegistry init()
+	从app中获取annoaconfiguer 列表，从configure中获取拦截器列表然后添加到自己的List<ClientInterceptor> clientInterceptors
+	
+2.  创建annoainterceptor bean，被1的@PostConstruct调用到add方法
 	AnnotationGlobalClientInterceptorConfigurer addClientInterceptors（）
 			this.context.getBeansWithAnnotation(GrpcGlobalClientInterceptor.class)
 			调用GlobalClientInterceptorRegistry 增加拦截器列表
-2. 创建registry bean
-	GlobalClientInterceptorRegistry init()
-	从app中获取annoaconfiguer 列表，从configure中获取拦截器列表然后添加到自己的List<ClientInterceptor> clientInterceptors
-		
-2. AbstractChannelFactory createChannel
+	
+2. GrpcClientBeanPostProcessor中调用AbstractChannelFactory createChannel
     得到custominterceptors
 	加上定义的注解拦截器：final List<ClientInterceptor> interceptors =
                 Lists.newArrayList(this.globalClientInterceptorRegistry.getClientInterceptors());
